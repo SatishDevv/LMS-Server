@@ -8,6 +8,8 @@ import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
 import { sendToken } from "../utils/jwt";
+import { redis } from "../utils/redis";
+
 
 interface IRegistrationBody {
   name: string;
@@ -15,6 +17,7 @@ interface IRegistrationBody {
   password: string;
   avatar?: string;
 }
+
 
 export const registarationUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -63,10 +66,12 @@ export const registarationUser = CatchAsyncError(
   }
 );
 
+
 interface IActivationToken {
   token: string;
   activationCode: string;
 }
+
 
 // create an activation code an token.
 export const createActivationToken = (user: any): IActivationToken => {
@@ -82,12 +87,13 @@ export const createActivationToken = (user: any): IActivationToken => {
   return { token, activationCode };
 };
 
-// activate user
 
+// activate user
 interface IActivateRequest {
   activation_token: string;
   activation_code: string;
 }
+
 
 export const activateUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -127,8 +133,8 @@ export const activateUser = CatchAsyncError(
   }
 );
 
-// login user
 
+// login user
 interface ILoginRequest {
   email: string;
   password: string;
@@ -163,10 +169,13 @@ export const loginUser = CatchAsyncError(
   }
 );
 
-export const logoutUser = CatchAsyncError(async(req:Request, res: Response, next:NextFunction) => {
+
+export const logoutUser = CatchAsyncError(async(req:Request | any, res: Response, next:NextFunction) => {
   try {
     res.cookie("access_token","",{maxAge: 1});
-    res.cookie("refresh_token","",{maxAge:1})
+    res.cookie("refresh_token","",{maxAge:1});
+    const userId = req.user?._id || '' ;   
+    redis.del(userId);
     res.status(200).json({
       success: true,
       message:"Logged out successfully"
@@ -174,7 +183,5 @@ export const logoutUser = CatchAsyncError(async(req:Request, res: Response, next
     
   } catch (error:any) {
     return next(new ErrorHandler(error.message,400));
-    
   }
-
 })
