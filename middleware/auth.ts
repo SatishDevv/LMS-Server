@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { CatchAsyncError } from "./catchAsyncError";
 import ErrorHandler from "../utils/ErrorHandler";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { redis } from "../utils/redis"; 
+import { redis } from "../utils/redis";
 
 // authenticated User
 export const isAutheticated = CatchAsyncError(
@@ -34,3 +34,15 @@ export const isAutheticated = CatchAsyncError(
     next();
   }
 );
+
+// validate user role
+export const authorizeRoles = (...roles : string[]) => {
+  return (req:Request | any , res:Response, next:NextFunction) => {
+    console.log(req.user?.role);
+    
+    if (!roles.includes(req.user?.role || "")) {
+      return next(new ErrorHandler(`Role: ${req.user?.role} is not allow to access this resource `,403));
+    }
+    next();
+  };
+};
