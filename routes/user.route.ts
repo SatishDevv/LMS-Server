@@ -1,5 +1,5 @@
 import express from "express";
-import { activateUser, loginUser, logoutUser, registarationUser, updateAccessToken } from "../controllers/userController";
+import { activateUser, getUserInfo, loginUser, logoutUser, registarationUser, updateAccessToken } from "../controllers/userController";
 import { isAutheticated } from "../middleware/auth";
 
 const userRouter = express.Router();
@@ -13,5 +13,7 @@ userRouter.post("/login",loginUser);
 userRouter.get("/logout" ,isAutheticated ,logoutUser );
 
 userRouter.get("/refresh",updateAccessToken);
+
+userRouter.get("/me",isAutheticated, getUserInfo);
 
 export default userRouter;

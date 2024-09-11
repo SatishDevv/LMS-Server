@@ -13,6 +13,7 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
+import { getUserById } from "../services/user.service";
 
 interface IRegistrationBody {
   name: string;
@@ -203,7 +204,7 @@ export const updateAccessToken = CatchAsyncError(
       }
 
       const session = await redis.get(decoded.id as string);
-      
+
       if (!session) {
         return next(new ErrorHandler(message, 400));
       }
@@ -233,6 +234,18 @@ export const updateAccessToken = CatchAsyncError(
         status: "success",
         accessToken,
       });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// get user by id.
+export const getUserInfo = CatchAsyncError(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id;
+      getUserById(userId, res);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
